@@ -95,5 +95,34 @@ namespace Barcode
             ProductInfo info = GetProductInfo(type);
             return info?.KoreanName ?? "알 수 없음";
         }
+
+        /// <summary>
+        /// 바코드 문자열로 ProductType 조회
+        /// 바코드에 "Banana", "Apple" 등의 텍스트가 들어있을 때 사용
+        /// </summary>
+        public static bool TryGetProductType(string barcode, out ProductType productType)
+        {
+            if (string.IsNullOrEmpty(barcode))
+            {
+                productType = default;
+                return false;
+            }
+
+            // 공백 제거 및 정리
+            string cleanBarcode = barcode.Trim();
+
+            // enum 이름으로 직접 파싱 시도 (대소문자 무시)
+            if (System.Enum.TryParse(cleanBarcode, true, out productType))
+            {
+                // 파싱된 값이 실제로 정의된 ProductType인지 확인
+                if (_products.ContainsKey(productType))
+                {
+                    return true;
+                }
+            }
+
+            productType = default;
+            return false;
+        }
     }
 }
