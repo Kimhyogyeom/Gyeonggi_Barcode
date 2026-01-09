@@ -23,6 +23,10 @@ namespace UI
         [SerializeField] private GameObject receiptPanel;
         [SerializeField] private GameObject mainPanel;
 
+        [Header("영수증 스크롤")]
+        [Tooltip("영수증 패널의 ScrollRect (열릴 때 스크롤 위치 초기화용)")]
+        [SerializeField] private ScrollRect receiptScrollRect;
+
         [Header("비활성화할 패널들")]
         [SerializeField] private GameObject[] panelsToHide;
 
@@ -66,6 +70,18 @@ namespace UI
             {
                 receiptPanel.SetActive(true);
             }
+
+            // 스크롤을 맨 아래로 초기화
+            if (receiptScrollRect != null)
+            {
+                receiptScrollRect.verticalNormalizedPosition = 0f;
+            }
+
+            // 영수증 오디오 재생
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayReceiptAudio();
+            }
         }
 
         /// <summary>
@@ -98,6 +114,12 @@ namespace UI
             if (mainPanel != null)
             {
                 mainPanel.SetActive(true);
+            }
+
+            // 메인화면 대기 음악 시작
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.ReturnToMain();
             }
         }
     }

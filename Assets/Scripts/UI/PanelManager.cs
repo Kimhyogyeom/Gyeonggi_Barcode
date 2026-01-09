@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Barcode;
 
 namespace UI
@@ -28,6 +29,10 @@ namespace UI
         [Header("공통 패널 (11개 품목용)")]
         [SerializeField] private GameObject panelCommon;           // PanelWindowReady
 
+        [Header("영수증 스크롤 (Common 패널용)")]
+        [Tooltip("Common 패널의 ScrollRect (표시될 때 스크롤 위치 초기화용)")]
+        [SerializeField] private ScrollRect commonScrollRect;
+
         private GameObject _currentActivePanel;
 
         private void Start()
@@ -48,6 +53,21 @@ namespace UI
                 targetPanel.SetActive(true);
                 _currentActivePanel = targetPanel;
                 Debug.Log($"[PanelManager] {panelType} 패널 표시");
+
+                // Common 패널(영수증)일 경우 스크롤 초기화 + 영수증 오디오 재생
+                if (panelType == PanelType.Common)
+                {
+                    if (commonScrollRect != null)
+                    {
+                        commonScrollRect.verticalNormalizedPosition = 0f;
+                    }
+
+                    // 영수증 오디오 재생 (푸드마일리지)
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlayReceiptAudio();
+                    }
+                }
             }
             else
             {

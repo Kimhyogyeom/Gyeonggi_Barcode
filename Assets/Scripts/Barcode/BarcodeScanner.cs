@@ -1,6 +1,9 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using System.IO;
+using System;
 using UI;
 
 namespace Barcode
@@ -29,17 +32,46 @@ namespace Barcode
         [Tooltip("스캔 기록을 표시할 텍스트 (프리팹 방식 사용시 비워둬도 됨)")]
         [SerializeField] private TMP_Text scanHistoryText;
 
+        [Header("탄소 합산")]
+        [Tooltip("탄소 합산 값을 표시할 텍스트")]
+        [SerializeField] private TMP_Text carbonTotalText;
+
+        [Header("탄소 게이지")]
+        [Tooltip("탄소 게이지 슬라이더 (0~1, 점수 올라갈수록 내려감)")]
+        [SerializeField] private Slider carbonGaugeSlider;
+
+        [Tooltip("게이지 최대 점수 (이 점수에서 게이지가 0이 됨)")]
+        [SerializeField] private int gaugeMaxScore = 50000;
+
         [Header("디버그")]
         [SerializeField] private bool showDebugLog = true;
 
         private List<string> _scanHistory = new List<string>();
+        private int _carbonTotal = 0;
 
         // 바코드 입력 버퍼 (USB 스캐너가 키보드처럼 문자를 입력함)
         private string _barcodeBuffer = "";
 
+        private static string _logPath;
+
+        private void Awake()
+        {
+            // 로그 파일 초기화
+            _logPath = Path.Combine(Application.dataPath, "..", "debug_log.txt");
+            File.WriteAllText(_logPath, $"=== 디버그 로그 시작: {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===\n\n");
+        }
+
         private void Start()
         {
+            WriteLog("Start() 호출됨");
             ClearHistory();
+        }
+
+        private void WriteLog(string message)
+        {
+            string log = $"[{DateTime.Now:HH:mm:ss.fff}] [BarcodeScanner] {message}";
+            Debug.Log(log);
+            try { File.AppendAllText(_logPath, log + "\n"); } catch { }
         }
 
         private void Update()
@@ -112,9 +144,11 @@ namespace Barcode
         /// </summary>
         public void ScanProduct(ProductType product)
         {
+            WriteLog($"ScanProduct({product}) 호출됨");
+
             if (panelManager == null)
             {
-                Debug.LogError("[BarcodeScanner] PanelManager가 할당되지 않았습니다!");
+                WriteLog("[ERROR] PanelManager가 할당되지 않았습니다!");
                 return;
             }
 
@@ -122,8 +156,11 @@ namespace Barcode
             string productName = ProductDatabase.GetKoreanName(product);
             PanelType panelType = ProductDatabase.GetPanelType(product);
 
+            // 탄소 값 조회
+            int carbonValue = ProductDatabase.GetCarbonValue(product);
+
             // 스캔 기록에 추가
-            AddToHistory(productName);
+            AddToHistory(productName, carbonValue);
 
             // 프리팹 아이템 생성
             if (scanItemSpawner != null)
@@ -131,9 +168,12 @@ namespace Barcode
                 scanItemSpawner.SpawnItem(product);
             }
 
-            if (showDebugLog)
+            WriteLog($"스캔 완료: {productName} (탄소:{carbonValue}) → {panelType} 패널, 현재 총합:{_carbonTotal}");
+
+            // 품목 오디오 재생
+            if (AudioManager.Instance != null)
             {
-                Debug.Log($"[BarcodeScanner] 스캔 완료: {productName} ({product}) → {panelType} 패널");
+                AudioManager.Instance.PlayProductAudio(product);
             }
 
             // 해당 패널 표시
@@ -151,10 +191,13 @@ namespace Barcode
         /// <summary>
         /// 스캔 기록에 품목 추가
         /// </summary>
-        private void AddToHistory(string productName)
+        private void AddToHistory(string productName, int carbonValue)
         {
             _scanHistory.Add(productName);
+            _carbonTotal += carbonValue;
             UpdateHistoryText();
+            UpdateCarbonText();
+            UpdateCarbonGauge();
         }
 
         /// <summary>
@@ -169,12 +212,44 @@ namespace Barcode
         }
 
         /// <summary>
+        /// 탄소 합산 텍스트 업데이트
+        /// </summary>
+        private void UpdateCarbonText()
+        {
+            if (carbonTotalText != null)
+            {
+                carbonTotalText.text = _carbonTotal > 0 ? $"{_carbonTotal:N0}점" : "";
+            }
+        }
+
+        /// <summary>
+        /// 탄소 게이지 슬라이더 업데이트
+        /// 0점 = 1 (맨 위), 50000점 = 0 (맨 아래)
+        /// </summary>
+        private void UpdateCarbonGauge()
+        {
+            if (carbonGaugeSlider != null)
+            {
+                // 점수가 올라갈수록 게이지가 내려감 (1 → 0)
+                float ratio = Mathf.Clamp01((float)_carbonTotal / gaugeMaxScore);
+                carbonGaugeSlider.value = 1f - ratio;
+            }
+        }
+
+        /// <summary>
         /// 스캔 기록 초기화
         /// </summary>
         public void ClearHistory()
         {
+            // 어디서 호출되는지 추적
+            string stackTrace = UnityEngine.StackTraceUtility.ExtractStackTrace();
+            WriteLog($"ClearHistory() 호출됨!\n스택트레이스:\n{stackTrace}");
+
             _scanHistory.Clear();
+            _carbonTotal = 0;
             UpdateHistoryText();
+            UpdateCarbonText();
+            UpdateCarbonGauge();
 
             // 생성된 프리팹 아이템도 삭제
             if (scanItemSpawner != null)
