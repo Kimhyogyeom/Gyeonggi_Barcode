@@ -10,12 +10,14 @@ namespace Barcode
         public ProductType Type { get; private set; }
         public string KoreanName { get; private set; }
         public PanelType PanelType { get; private set; }
+        public int CarbonValue { get; private set; }
 
-        public ProductInfo(ProductType type, string koreanName, PanelType panelType)
+        public ProductInfo(ProductType type, string koreanName, PanelType panelType, int carbonValue = 0)
         {
             Type = type;
             KoreanName = koreanName;
             PanelType = panelType;
+            CarbonValue = carbonValue;
         }
     }
 
@@ -35,23 +37,23 @@ namespace Barcode
         {
             _products = new Dictionary<ProductType, ProductInfo>
             {
-                // 개별 패널 품목 (14개) - 순서대로
-                { ProductType.Banana, new ProductInfo(ProductType.Banana, "바나나", PanelType.Banana) },
-                { ProductType.Lemon, new ProductInfo(ProductType.Lemon, "레몬", PanelType.Lemon) },
-                { ProductType.Cabbage, new ProductInfo(ProductType.Cabbage, "배추", PanelType.Cabbage) },
-                { ProductType.GreenOnion, new ProductInfo(ProductType.GreenOnion, "파", PanelType.GreenOnion) },
-                { ProductType.Apple, new ProductInfo(ProductType.Apple, "국산 사과", PanelType.Apple) },
-                { ProductType.AppleChile, new ProductInfo(ProductType.AppleChile, "칠레산 사과", PanelType.AppleChile) },
-                { ProductType.Grape, new ProductInfo(ProductType.Grape, "국산 포도", PanelType.Grape) },
-                { ProductType.GrapeUSA, new ProductInfo(ProductType.GrapeUSA, "미국산 포도", PanelType.GrapeUSA) },
-                { ProductType.Potato, new ProductInfo(ProductType.Potato, "국산 감자", PanelType.Potato) },
-                { ProductType.PotatoImport, new ProductInfo(ProductType.PotatoImport, "수입 감자", PanelType.PotatoImport) },
-                { ProductType.Tangerine, new ProductInfo(ProductType.Tangerine, "국산 귤", PanelType.Tangerine) },
-                { ProductType.TangerineImport, new ProductInfo(ProductType.TangerineImport, "수입 귤", PanelType.TangerineImport) },
-                { ProductType.Orange, new ProductInfo(ProductType.Orange, "국산 오렌지", PanelType.Orange) },
-                { ProductType.OrangeImport, new ProductInfo(ProductType.OrangeImport, "수입 오렌지", PanelType.OrangeImport) },
+                // 개별 패널 품목 (14개) - 순서대로 (탄소값 포함)
+                { ProductType.Banana, new ProductInfo(ProductType.Banana, "바나나", PanelType.Banana, 9000) },
+                { ProductType.Lemon, new ProductInfo(ProductType.Lemon, "레몬", PanelType.Lemon, 9000) },
+                { ProductType.Cabbage, new ProductInfo(ProductType.Cabbage, "배추", PanelType.Cabbage, 500) },
+                { ProductType.GreenOnion, new ProductInfo(ProductType.GreenOnion, "파", PanelType.GreenOnion, 30) },
+                { ProductType.Apple, new ProductInfo(ProductType.Apple, "국산 사과", PanelType.Apple, 300) },
+                { ProductType.AppleChile, new ProductInfo(ProductType.AppleChile, "칠레산 사과", PanelType.AppleChile, 18000) },
+                { ProductType.Grape, new ProductInfo(ProductType.Grape, "국산 포도", PanelType.Grape, 300) },
+                { ProductType.GrapeUSA, new ProductInfo(ProductType.GrapeUSA, "미국산 포도", PanelType.GrapeUSA, 10000) },
+                { ProductType.Potato, new ProductInfo(ProductType.Potato, "국산 감자", PanelType.Potato, 200) },
+                { ProductType.PotatoImport, new ProductInfo(ProductType.PotatoImport, "수입 감자", PanelType.PotatoImport, 8000) },
+                { ProductType.Tangerine, new ProductInfo(ProductType.Tangerine, "국산 귤", PanelType.Tangerine, 600) },
+                { ProductType.TangerineImport, new ProductInfo(ProductType.TangerineImport, "수입 귤", PanelType.TangerineImport, 0) },
+                { ProductType.Orange, new ProductInfo(ProductType.Orange, "국산 오렌지", PanelType.Orange, 13000) },
+                { ProductType.OrangeImport, new ProductInfo(ProductType.OrangeImport, "수입 오렌지", PanelType.OrangeImport, 0) },
 
-                // 공통 패널 품목 (11개) - 모두 PanelType.Common 사용
+                // 공통 패널 품목 (11개) - 탄소값 없음
                 { ProductType.Bread, new ProductInfo(ProductType.Bread, "빵", PanelType.Common) },
                 { ProductType.Pineapple, new ProductInfo(ProductType.Pineapple, "파인애플", PanelType.Common) },
                 { ProductType.IceCream, new ProductInfo(ProductType.IceCream, "아이스크림", PanelType.Common) },
@@ -94,6 +96,15 @@ namespace Barcode
         {
             ProductInfo info = GetProductInfo(type);
             return info?.KoreanName ?? "알 수 없음";
+        }
+
+        /// <summary>
+        /// 품목의 탄소 값 조회
+        /// </summary>
+        public static int GetCarbonValue(ProductType type)
+        {
+            ProductInfo info = GetProductInfo(type);
+            return info?.CarbonValue ?? 0;
         }
 
         /// <summary>

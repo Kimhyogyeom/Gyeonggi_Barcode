@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
+// STT 출처 : CLOVA Dubbing
 namespace UI
 {
     /// <summary>

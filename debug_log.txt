@@ -1,0 +1,10 @@
+=== 디버그 로그 시작: 2026-01-15 14:50:07 ===
+
+[14:50:07.542] [BarcodeScanner] Start() 호출됨
+[14:50:07.545] [BarcodeScanner] ClearHistory() 호출됨!
+스택트레이스:
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+Barcode.BarcodeScanner:ClearHistory () (at Assets/Scripts/Barcode/BarcodeScanner.cs:245)
+Barcode.BarcodeScanner:Start () (at Assets/Scripts/Barcode/BarcodeScanner.cs:67)
+

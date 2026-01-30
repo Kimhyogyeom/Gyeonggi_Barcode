@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(paste:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(git add:*)",
+      "Bash(git remote set-head:*)"
     ]
   }
 }
